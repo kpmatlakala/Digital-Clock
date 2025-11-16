@@ -1,115 +1,107 @@
-# ⏰ OLED Clock Display with DS3231 RTC + Alarm + LED + Buzzer
+# ⏰ OLED Clock Display with DS3231 RTC + Temperature + LED Breathing Animation
 
-A minimalistic digital clock project using an **SSD1306 OLED display** and **DS3231 RTC**, with planned support for **LED animations** and **buzzer alarms** — built on Arduino/PlatformIO. Currently, the LED animations are temporarily removed for simplified debugging.
-
-The display alternates between a time view and a date view, with built-in alert support and future external control via PC.
+A clean and minimal digital clock project using an **SSD1306 OLED**, **DS3231 RTC**, and **NeoPixel LED strip**, built with **PlatformIO**.  
+The display now alternates between **date and temperature**, and LED breathing animation has been re-enabled with a smooth non-flickering effect.
 
 ---
 
 ## 🕹 Features (Current Status)
 
-- ⏱ Live digital clock with blinking colon
-- 📆 Auto-rotating slides: time & date every 15 minutes
-- 📊 Top progress bar: seconds or alarm countdown
-- 🔔 Alarm system (planned: buzzer + LED feedback)
-- 💡 LED animations temporarily removed; will reintroduce idle, transition, and alarm effects
-- 🔋 Battery-backed DS3231 keeps time even when unplugged
-- 🛠️ Code now set up in **PlatformIO** for easier library management
+- ⏱ **Live digital clock** with blinking colon  
+- 🌡 **DS3231 on-board temperature** displayed every 15 seconds (alternates with date)  
+- 📆 **Compact day/date view** (e.g., `Fr12`)  
+- 💡 **Cyan breathing NeoPixel animation** (smooth, fixed peak flicker)  
+- 🔋 **Battery-backed RTC** keeps time when powered off  
+- 🛠 **PlatformIO project structure** with organized classes (`ClockDisplay`, `LEDAnimator`)  
 
 ---
 
 ## 📷 UI Layout
 
-### 🔹 Slide 1: Time View
-- Large centered `HH:MM:SS`
-- Top-left: seconds progress bar (12 ticks)
-- Top-right: weekday + date (e.g. `Fr12`)
-- Colon blinks every 500ms
-- LED animations currently disabled
+### 🔹 **Time View (Primary)**
+- Large centered `HH:MM` with blinking colon  
+- Seconds shown small on the right  
+- Top-right alternates every 15s between:
+  - **DATE** (e.g., `Fr12`)
+  - **TEMPERATURE** (e.g., `25°C` or `25`˙`C`)  
 
-### 🔹 Slide 2: Date View (every 15 mins for 15s)
-- Top: `DAY DD` (e.g. `FRI 12`)
-- Bottom: `MONTH YYYY` (e.g. `SEP 2025`)
-- LED animations currently disabled
+### 🔹 **Temperature/Date Alternation**
+- Toggles automatically every **15 seconds**  
+- Temperature uses DS3231 built-in thermistor and is formatted cleanly  
 
-### 🔔 Alarm View (planned)
-- Top: countdown progress bar
-- LED: solid red + flashing
-- Buzzer: sounds for 30s, then snoozes for 5 min
+### 🔹 **LED Animation (Idle Mode)**
+- Smooth cyan breathe effect  
+- No flicker at brightness peaks  
+- Fully encapsulated in `LEDAnimator.cpp`
 
 ---
 
 ## 🧰 Hardware Used
 
-| Component             | Example/Spec              |
-|----------------------|---------------------------|
-| Microcontroller      | Arduino Uno / Nano        |
-| OLED Display         | SSD1306 (128x64, I2C)     |
-| RTC Module           | DS3231                    |
-| Bi-color LED         | Common Anode (planned)    |
-| Buzzer               | Active or passive (planned) |
-| Push button (planned)| Momentary, NO             |
+| Component             | Notes                         |
+|----------------------|-------------------------------|
+| Microcontroller      | Arduino Nano (ATmega328P)     |
+| Display              | SSD1306 128×64 I2C OLED       |
+| RTC Module           | DS3231 (temp + clock)         |
+| LEDs                 | WS2812b (NeoPixel, 5 LEDs)    |
+| Buzzer *(planned)*   | Active/passive                |
+| Button *(planned)*   | Snooze / mode                 |
 
-> **Wiring Notes:**
-> - **OLED & DS3231**: share I2C — SDA → A4, SCL → A5 (Uno/Nano)
-> - **LEDs & Buzzer**: planned pins, currently inactive
-> - **Power**: Ensure sufficient current supply for LEDs + buzzer when implemented
-
----
-
-## 📦 Dependencies
-
-Install via Arduino Library Manager or PlatformIO:
-
-- `Adafruit GFX Library`
-- `Adafruit SSD1306`
-- `RTClib`
-- `FastLED` (for future LED effects)
+**Wiring (Nano):**
+- **I2C:** SDA → A4, SCL → A5  
+- **NeoPixel:** D6  
+- **RTC power:** 3.3V or 5V depending on module  
 
 ---
 
-## 🔊 Alarm Logic (Planned)
+## 📦 Dependencies (PlatformIO)
 
-- Alarm time hardcoded (e.g., `12:20`)
-- Planned behavior at alarm time:
-  - Buzzer rings for 30 seconds
-  - LED turns solid red
-  - Progress bar shows countdown
-- Planned snooze: 5 minutes
-- Future: manual stop / snooze button input
+```ini
+lib_deps =
+    adafruit/Adafruit BusIO
+    adafruit/Adafruit GFX Library
+    adafruit/Adafruit SSD1306
+    adafruit/RTClib
+    northernwidget/DS3231
+    adafruit/Adafruit NeoPixel
+```
+All installed automatically through platformio.ini.
 
----
+## 🔥 LED Animation System
+The LED engine is modular and supports:
+- Idle breathing mode (currently active)
+- Future modes:
+  * Alarm flashing
+  * Transition fades
+  * Multi-color effects
 
-## 🚀 Next Steps / Development Roadmap
+The breathing animation was updated to remove the peak brightness flicker by clamping and reversing direction before drawing.
 
-- [x] PlatformIO project structure
-- [x] Basic OLED clock functionality working
-- [x] Blink colon and update seconds progress bar
-- [ ] Reintroduce LED idle breathing effect
-- [ ] Implement LED transitions & alarm flashes
-- [ ] Add buzzer alarm logic
-- [ ] Button input for snooze/stop
-- [ ] PC-based alarm configuration
-- [ ] 12h / 24h time toggle
-- [ ] EEPROM-based setting persistence
+## 🌡 Temperature Display Notes
+- Uses rtc.getTemperature()
+- DS3231 temperature updates internally every 64 seconds
+- Display format currently:
+  * 25˙C or fallback 25'C
+- Rendering position corrected to align with compact date region
 
----
+🚀 Roadmap
+- [x] PlatformIO migration
+- [x] OLED clock with time + seconds
+- [x] Day/date compact view
+- [x] Temperature alternating UI
+- [x] NeoPixel breathing animation (fixed)
+- [ ] LED transition modes
+- [ ] Buzzer + alarm logic
+- [ ] Snooze button input
+- [ ] PC-based settings editor
+- [ ] Animation profiles (quiet/night mode)
+- [ ] EEPROM save/load of settings
 
 ## 🤝 Credits
-
-Built using:
-
-- [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library)
-- [Adafruit SSD1306](https://github.com/adafruit/Adafruit_SSD1306)
-- [RTClib](https://github.com/adafruit/RTClib)
-- [FastLED](https://github.com/FastLED/FastLED) (planned)
-
----
+- Adafruit GFX & SSD1306
+- RTClib
+- DS3231 Library
+- Adafruit NeoPixel
 
 ## 💡 Inspiration
-
-A personal, modular smart clock project — from simple timekeeping to a customizable, extensible interface for alerts, audio, and ambient feedback. Built step by step.
-
----
-
-> ⚙️ Open-source & yours to hack. Contributions welcome once live on GitHub!
+A small modular clock evolving into a full-featured smart desktop companion — ambient LEDs, alarm logic, and a clean UI.

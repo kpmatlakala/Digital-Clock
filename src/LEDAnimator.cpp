@@ -34,14 +34,24 @@ void LEDAnimator::update() {
 // IDLE: cyan breathing animation
 // ----------------------------------------------------
 void LEDAnimator::applyIdleBreath() {
+    // Adjust brightness
     breatheBrightness += breatheStep;
-    if (breatheBrightness <= 0 || breatheBrightness >= 255)
+
+    // Clamp and reverse *before* displaying
+    if (breatheBrightness >= 255) {
+        breatheBrightness = 255;
         breatheStep = -breatheStep;
+    }
+    else if (breatheBrightness <= 0) {
+        breatheBrightness = 0;
+        breatheStep = -breatheStep;
+    }
 
     uint32_t cyan = leds.Color(0, breatheBrightness, breatheBrightness);
 
     setStripColor(cyan);
 }
+
 
 void LEDAnimator::setStripColor(uint32_t color) {
     for (uint8_t i = firstLED; i <= lastLED; i++)

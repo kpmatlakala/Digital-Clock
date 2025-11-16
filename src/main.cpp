@@ -68,14 +68,16 @@ void setStripColor(uint32_t color) {
 
 void loop() {
     DateTime now = rtc.now();
+    float tempC = rtc.getTemperature();
 
     // --- Colon blink ---
     if (millis() - lastBlink >= blinkInterval) {
         lastBlink = millis();
         showColon = !showColon;
     }
+    
+    clockDisp.showTime(now, showColon, tempC);
 
-    clockDisp.showTime(now, showColon);
 
     // --- NeoPixel breathing effect ---
     ledAnim.update();
